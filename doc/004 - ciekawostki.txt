@@ -1,0 +1,45 @@
+The first of these functions, rust_eh_personality, 
+is used by the failure mechanisms of the compiler. 
+This is often mapped to GCC's personality function 
+(see the libstd implementation for more information), 
+but crates which do not trigger a panic can be assured that 
+this function is never called. 
+The language item's name is eh_personality.
+
+
+The second function, rust_begin_panic, is also used by the 
+failure mechanisms of the compiler. 
+When a panic happens, this controls the message that's displayed on the screen. 
+While the language item's name is panic_fmt, the symbol name is rust_begin_panic.
+
+A third function, rust_eh_unwind_resume, 
+is also needed if the custom_unwind_resume flag 
+is set in the options of the compilation target. 
+It allows customizing the process of resuming 
+unwind at the end of the landing pads. 
+The language item's name is eh_unwind_resume.
+
+
+______instalacja GDB-----------------------
+z gdb sa problemy w trybie chronionym(przejscie do niego)
+Autor bloga, ktory czytalem sugerowal skorzystanie z jego patcha
+Oczywisice trzeba dodac reguly do makefile i powinno smigac na porcie 1234
+
+https://github.com/phil-opp/binutils-gdb#gdb-for-64-bit-rust-operating-systems
+
+DZIAŁA!
+
+https://puu.sh/sUPCM/36e7f671f4.png
+Aby wszystko trybilo, trzeba wejsc do folderu z projektem
+uruchomic make debug
+
+potem otworzyc terminal i 
+
+Quemu nasluchuje domyslnie na tym porcie, wiec wszystko automatycznie śmignie z tą komendą
+rust-os-gdb/bin/rust-gdb "build/kernel-x86_64.bin" -ex "target remote :1234"
+
+tui enable
+s
+p
+l
+break lib.rs:<linia>

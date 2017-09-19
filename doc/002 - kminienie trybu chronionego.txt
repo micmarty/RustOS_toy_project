@@ -1,0 +1,138 @@
+SŁOWA KLUCZOWE: Notatka, BASH
+NUMERACJA: cyfry rzymskie
+KOD W BASHU: ">   KOMENDA"
+SEKCJE ODDZIELANE: myślniki
+SEKCJE NUMEROWANE: trzycyfrowo, arabski
+KOMENTARZE: jak w C
+
+002. Rekonesans wchodzenia w tryb chroniony, może nawet 64 bitowy od razu
+---------------------------------------------------------------------------
+
+Notatka I -> wciskanie literek do bufora VGA
+    Edytujemy boot.asm w src/arch/x86_64
+    ;4f -> czerwone tlo literek
+    ;0xb8000 - adres początku bufora tekstowego VGA
+    
+    kolejne znaki wchodzą na WYŻSZE adresy!
+    zapis mozna upraszczac wpychając zamiast po jednym znaku, po 2 znaki(czyli 4 bajty)
+    chcemy "ER" wyswietlic:
+        mov dword [0xb8000], 0x4f524f45 ;52 -> 'R', 45 -> 'E' => ODWROTNA KOLEJNOSC!
+    albo w dwóch instrukcjach
+        mov dword [0xb8000], 0x4f45 ;'E'
+        mov dword [0xb8002], 0x4f52 ;'R'
+
+---------------------------------------------------------------------------
+
+Notatka II -> mozna zarezerwowac pamiec z poziomu asemblera komendą resb(reserve byte)
+    Dokumentacja twierdzi ze resb dziala jak DW ?, czyli niezainicjalizowana przestrzen,
+    Jest to pseudo instrukcja
+
+OD TEGO MOMENTU MAM STOS 64 bajtów i ustawiony esp na jego sufit
+
+---------------------------------------------------------------------------
+    
+Notatka III -> stos rośnie w dól, push odejmuje od adresu 4
+
+---------------------------------------------------------------------------
+
+Notatka IV -> dla zabawy mozna upewnic sie czy multiboot sie zaladowal,
+    wystarczy sprawdzic czy magiczna wartosc jest  w eax przed ladowaniem kernela
+    
+---------------------------------------------------------------------------
+Notatka V -> co sie dzieje przy odwolaniu do pamieci ze stronnicowaniem, cytat z pdfa w doc
+    movl 21, %eax
+    1. translacja wirtualnego 21 na fizyczny adress 117
+    2. trzeba znalezc odpowiednii wpis z tablicy wpisow iw wziac ramke
+    
+    Again, let’s just examine the explicit reference to address 21 and not
+    worry about the instruction fetch. In this example, we’ll assume the hardware
+    performs the translation for us. To fetch the desired data, the system
+    must first translate the virtual address (21) into the correct physical address
+    (117). Thus, before fetching the data from address 117, the system
+    must first fetch the proper page table entry from the process’s page table,
+    perform the translation, and then load the data from physical memory
+
+---------------------------------------------------------------------------
+
+Notatka VI -> tworze 4 tablice(w sumie to na razie 3):
+    Page-Map Level-4 Table (PML4),
+    Page-Directory Pointer Table (PDP),
+    Page-Directory Table (PD),
+    Page Table (PT).
+    
+    Każda po 512 wpisów, każðy wpis po 8 bajtów = 4096 =4kB
+    
+    w trybie 64-bitowym korzystamy i tak z 48 bitów, z czego 12 jest na offset na stronie 2^12 = 4096
+    we wpisach sa flagi https://puu.sh/sj3jV/f53a8a5507.png
+
+---------------------------------------------------------------------------
+  
+Notatka VII -> w boot.asm napisalem(w sumie to przepisalem, ale ze zrozumieniem) mapowanie pamieci
+    set_up_page_tables ma mapowac tak, że:
+    pierwszy wpis w P4 wskazuje na tablice P3
+    pierwszy w wpis w P3 wskazuje na tablice P2
+    tablice p2 wypelniamy 512 stronami po 2MB w petli
+    
+---------------------------------------------------------------------------
+
+Notatka VIII -> ostatniecznie proboje zaprzac wszystko do dzialania
+    musze dac procesorowi adres do tablicy z mapa pamieci -> cr3
+    wlaczyc PAE w cr4 -> phyciscal address extension
+    wlaczyc long mode
+    wlaczyc stronnicowanie w rejestrze cr0
+    
+---------------------------------------------------------------------------
+Notatka IX -> etykiety z kropką (.pointer) są podetykietami poprzedniej bez kropki(zasiegi)
+
+TERAZ GDT
+
+Potrzebujemy jednego segmentu kodu i jednego danych
+W boot.asm jest region gdzie tworze:
+- wpis zerowy
+- segment kodu z odpowiednimi bitami 
+- segment danych z odpowiednimi bitami
+- zliczam dlugosc tablicy gdt w pamieci
+- adres poczatkowy tablicy GDT
+
+Wszystko jest inicjalizowane na poczatku boot.asm, 
+ale wykonujemy NOWOŚĆ-> far jump czyli skok do innego pliku
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+KONIEC 002

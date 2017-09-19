@@ -1,0 +1,75 @@
+SŁOWA KLUCZOWE: Notatka, BASH
+NUMERACJA: cyfry rzymskie
+KOD W BASHU: ">   KOMENDA"
+SEKCJE ODDZIELANE: myślniki
+SEKCJE NUMEROWANE: trzycyfrowo, arabski
+KOMENTARZE: jak w C
+
+001. Wstęp -> wyświetlenie symbolu OK na ekranie
+
+---------------------------------------------------------------------------
+Notatka I -> Nagłówek w standardzie multiboot
+
+        //  tabelka objaśniająca multiboot_header.asm
+        magic number	   u32	0xE85250D6
+        architecture	   u32	0 for i386, 4 for MIPS
+        header length	   u32	total header size, including tags
+        checksum	       u32	-(magic + architecture + header_length)
+        tags	           variable
+        end tag	           (u16, u16, u32)	(0, 0, 8)
+
+---------------------------------------------------------------------------
+BASH I -> podstawowa kompilacja i podglądanie źródleł w hexach + dezasemblacja
+
+    //  przykladowa kompilacja - już raczej bezużyteczna
+>   nasm multiboot_header.asm
+>   nasm boot.asm
+>   hexdump -x <plik>
+>   ndisasm -b 32 <plik>    //disasembler w trybie 32 bitowym
+
+--------------------------------------------------------------------------
+BASH II -> kompilacja nagłówka multiboot, pliku z kodem do wyświetlenia OK + poprawne zlinkowanie
+
+    //  Od teraz bede korzystal z linkera, zeby wygenerowal binarke w formacie
+    //  ELF object files
+    //  W linkerze jest ustalona odpowiednia kolejność łączenia plikow
+>   nasm -f elf64 multiboot_header.asm
+>   nasm -f elf64 boot.asm
+>   ld --nmagic -o kernel.bin -T linker.ld multiboot_header.o boot.o
+
+---------------------------------------------------------------------------
+NOTATKA II -> spostrzeżenie po nieprawidłowym linkowaniu nagłówka multiboot(trzeba wyłączyć alignment)
+    
+    // --nmagic    =>  wyłącza automatyczny alignment przez linker w pliku wykonywalnym
+    //  podglad pliku wykonywalnego
+>   objdump -h kernel.bin
+    // konsola zwróciła:
+    // bez --nmagic (patrz: file off) <- KONIECZNE DO ZADZIAŁANIA
+    https://puu.sh/s9xrC/6c37eac854.png
+    // z --nmagic
+    https://puu.sh/s9xtf/fa92b93443.png
+
+---------------------------------------------------------------------------
+    //  struktura GRUB wymusza obecnosc folderow isofiles,boot,grub i grub.cfg
+    //musialem zainstalowac libisoburn dla grub-mkrescue
+>   grub-mkrescue -o os.iso isofiles
+>   qemu-system-x86_64 -cdrom os.iso
+
+>   objdump -f isofiles/boot/kernel.bin
+
+---------------------------------------------------------------------------
+
+Tutorial zaleca korzystanie z makefile, by zautomatyzować proces kompilacji i uruchamiania systemu
+…
+├── Makefile
+└── src
+    └── arch
+        └── x86_64
+            ├── multiboot_header.asm
+            ├── boot.asm
+            ├── linker.ld
+            └── grub.cfg
+            
+Makefile bedzie udostępniał generowanie iso do folderu build, który sam będzie tworzył (mkdir -p)
+
+KONIEC 001

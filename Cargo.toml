@@ -1,0 +1,22 @@
+[package]
+name = "chrust_os"
+version = "0.1.0"
+authors = ["Michał Martyniak <michal.martyniak@linux.pl>"]
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+#https://crates.io/crates/rlibc
+rlibc = "1.0.0"
+cpuio = "*"
+scancode = "*"
+
+#wyłączamy unwinding w naszym kernelu dla obu trybów
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+#niestety ten problem nadal moze sie zdarzyc wiec w lib.rs
+#dodalem pusta funkcje unwinda

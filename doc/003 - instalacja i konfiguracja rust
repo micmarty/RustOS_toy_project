@@ -1,0 +1,79 @@
+SŁOWA KLUCZOWE: Notatka, BASH
+NUMERACJA: cyfry rzymskie
+KOD W BASHU: ">   KOMENDA"
+SEKCJE ODDZIELANE: myślniki
+SEKCJE NUMEROWANE: trzycyfrowo, arabski
+KOMENTARZE: jak w C
+
+002. Instalacja i konfiguracja jezyka Rust i wdrozenie do kernela
+---------------------------------------------------------------------------
+Notatka I -> korzystam z rustupa do zarzadzania wersjami rusta
+    trzeba korzystac z wersji nightly bo pozwalają na niestabilne feature'y
+    Cargo posluzy do zarzadzania wersjami zaleznosci i kompilacje plikow
+
+
+
+    Musialem wylaczyc biblioteki standardowe: w src/lib.rs
+    #![no_std]
+
+    Musiałem wyłączyć automatyczne manglowanie nazw funkcji,
+    zeby z asemblera moc wywolac maina
+
+> cargo build --target=x86_64-unknown-linux-gnu tworzy statyczna biblioteke
+ktora mozna podpiac do kernela w asm
+
+---------------------------------------------------------------------------
+Notatka II -> wrzucialem do asm wywolanie rust main
+ w lib.rs jest main, niestety MAM BLAD ODWOLANIA DO MEMCPY
+
+ !NIE MAMY PODLINKOWANYCH BIBLIOTEK NIEZALEZNYCH OD SYSTEMU
+ Jest gotowe rlibc, mozna z niego skorzystac
+
+Po dodaniu zaleznosci w Cargo.toml zaczyna dzialac
+
+Autor twierdzi ze powinny pojawiac sie jeszcze problemu z brakiem
+funkcji fmod i fmodf jako zaleznosci ktorych nie mamy, ale ten problem u mnie nie wystepuje
+
+Moje potwierdzenie znalazlem na githubie rusta!!!
+https://puu.sh/sv4M1/99fed89701.png
+
+Na przyszlosc bezdziemy wycinac rzeczy z ktorych nie korzystam
+korzystajac z flagi gc-sections -> garbage collected sections
+
+Korzystanie z range (0..3) w lib.rs powoduje unwinding , wchodzi panic
+Musimy to wyłączyć w Cargo.toml
+
+Czasem to nie pomoze wiec robimy w lib.rs sztuczna funkcje unwinda
+jesli blad nastapi, to kernel bedzie sie restartowal w petli
+
+---------------------------------------------------------------------------
+Notatka III -> mozna debugowac interrupty CPU
+PAMIETAC, zeby najpierw zrobic make run, albo make iso, zeby obraz byl aktualny
+> qemu-system-x86_64 -d int -no-reboot -cdrom build/os-x86_64.iso
+
+Jesli w do maina wstawimy to
+let test = (0..3).flat_map(|x| 0..x).zip(0..);
+wtedy wywalimy blad.
+IP podaje adres gdzie sie wywalil, wpiszmy ten adres do grepa
+> objdump -D build/kernel-x86_64.bin | grep "10019b:"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+KONIEC 003
