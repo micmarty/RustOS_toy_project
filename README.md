@@ -7,6 +7,10 @@
 - QEMU
 - gdb may be useful
 
+## Short description and a demo video
+
+http://michalmartyniak.me/recent_projects.html
+
 ## How to run
 
 Ready-to-use ISO is inside ```build``` folder
