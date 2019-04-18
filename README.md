@@ -9,7 +9,7 @@
 
 ## Short description and a demo video
 
-http://martyniak.me/recent_projects.html
+http://martyniak.tech/recent_projects.html
 
 ## How to run
 
