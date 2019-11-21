@@ -1,5 +1,10 @@
 # RustOS_toy_project
 
+Disclaimer: I can't look at that crappy code anymore, hence here it is - TODO list:
+- [ ] Rewrite using english names (polish was required by my lecturer LOL)
+- [ ] Use Rust more extensively, try to avoid `unsafe` blocks
+- [ ] Write instruction on how to reproduce it from scratch
+
 ## Requirements
 
 - Rust compiler
